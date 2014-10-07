@@ -1,0 +1,110 @@
+;;;Anton Pashyk
+
+;;;1
+(setf nouns '(man woman ball table hat))
+(setf verbs '(hit took saw liked))
+(setf articles '(the a))
+
+(defun random-elt (choices)
+	(elt choices (random (length choices))))
+
+(defun one-of (set)
+	(list (random-elt set)))
+
+(defun sentence ()
+	(append (noun-phrase) (verb-phrase)))
+
+(defun noun-phrase ()
+	(append (one-of articles) (one-of nouns)))
+
+(defun verb-phrase ()
+	(append (one-of verbs) (noun-phrase)))
+
+
+;;;2
+(defun check-data (alist)
+	(cond ((null alist) '())
+		(T
+		(cons (cond ((listp (first alist)) (reverse-all (first alist)))
+				(T (first alist)))
+			(check-data (rest alist))))))
+
+(defun reverse-all (alist)
+	(reverse (check-data alist)))
+
+;;3
+(defun flatten (alist)
+	(cond ((null alist) '())
+		((not (listp alist)) (list alist))
+		(T (append (flatten (first alist)) (flatten (rest alist))))))
+
+;;4
+(defvar roman-number-a-list
+	'((I 1)(V 5)(x 10)(L 50)(C 100)(D 500)(M 1000)))
+
+(defun numeral-to-decimal (numeral)
+	(second (assoc numeral roman-number-a-list)))
+
+(defun roman-to-decimal (alist)
+	(cond ((null alist) 0)
+		((=(length alist) 1) (numeral-to-decimal (first alist)))
+		((< (numeral-to-decimal (first (last (butlast alist)))) (numeral-to-decimal (first (last alist))))
+						(+ (- (numeral-to-decimal (first (last alist))) (numeral-to-decimal (first (last (butlast alist)))))
+							(roman-to-decimal (butlast (butlast alist)))))
+		(T (+ (numeral-to-decimal (first (last alist))) (roman-to-decimal (butlast alist))))))
+
+;;;5
+(defun union2 (R S)
+	(append R S))
+
+(defun check-match (item alist)
+	(cond ((null alist) NIL)
+		((equal item (first alist)) T)
+		(T (check-match item (rest alist)))))
+
+(defun intersect2 (R S)
+	(cond ((null R) '())
+		((check-match (first R) S) (cons (first R) (intersect2 (rest R) S)))
+		(T (intersect2 (rest R) S))))
+
+(defun diff2 (R S)
+	(cond ((null R) '())
+		((not (check-match (first R) S)) (cons (first R) (diff2 (rest R) S)))
+		(T (diff2 (rest R) S))))
+	
+(defun symm-diff2 (R S)
+	(append (diff2 R S) (diff2 S R)))
+
+(defun is-list2 (alist)
+	(listp (first alist)))
+
+(defun is-empty2 (alist)
+	(cond 	((= (length alist) 0) T)
+		((is-list2 alist) (cond ((is-empty2 (first alist)) (is-empty2 (rest alist)))
+						(T NIL)))
+		(T (cond ((equal (first alist) NIL) (is-empty2 (rest alist)))
+			(T NIL)))))
+
+(defun is-member2 (X S)
+	(check-match X S))
+
+(defun subset-checker (R S)
+	(cond ((null R) T)
+		((null S) NIL)
+		((equal (first R) (first S)) (subset-checker (rest R) (rest S)))
+		(T NIL)))
+
+(defun is-subset2 (R S)
+	(cond ((null S) NIL)
+		((equal (first R) (first S)) (subset-checker R S))
+		(T (is-subset2 R (rest S)))))
+
+(defun are-equal2 (R S)
+	(cond ((null R) NIL)
+		((null S) NIL)
+		((equal (first R) (first S)) (subset-checker (rest R) (rest S)))
+		(T NIL)))
+	
+
+
+
